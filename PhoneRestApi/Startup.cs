@@ -37,8 +37,9 @@ namespace PhoneRestApi
                                   {
                                       builder.WithOrigins("*")
                                        .AllowAnyMethod()
-                                       .AllowAnyHeader(); 
-                                  });
+                                       .AllowAnyHeader()
+                                       .WithExposedHeaders("X-Pagination");
+            });
             });
 
 

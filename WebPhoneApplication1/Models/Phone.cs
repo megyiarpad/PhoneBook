@@ -1,9 +1,10 @@
 using System;
 
-namespace PhoneRestApi
+namespace WebPhoneApplication1
 {
-    public class PhoneDTO
+    public class Phone
     {
+        public int ID { get; set; }
         public string FirstName { get; set; }
 
         public string LastName { get; set; }
@@ -12,8 +13,4 @@ namespace PhoneRestApi
 
     }
 
-    public class Phone : PhoneDTO
-    {
-        public int ID { get; set; }
-    }
 }

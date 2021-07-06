@@ -1,11 +1,24 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using PhoneRestApi.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
+
+
+/*
+var users = context.PhoneItems.Skip((phoneParameter.PageNumber - 1) * phoneParameter.PageSize)
+                .Take(phoneParameter.PageSize)
+                .ToList();
+
+
+
+
+
+ */
 namespace PhoneRestApi.Controllers
 {
     [ApiController]
@@ -22,11 +35,30 @@ namespace PhoneRestApi.Controllers
         }
 
         [HttpGet]
-        public IEnumerable<Phone> GetAll()
+        public PhoneDTO GetAll([FromQuery]PhoneParameter phoneParameter)
         {
+            var empObj = new PhoneDTO();
+            var users = Helpers.PagedList<Phone>.ToPagedList(context.PhoneItems,
+                phoneParameter.PageNumber,
+                phoneParameter.PageSize);
+            empObj.Phones = users;
+            empObj.TotalCount = users.TotalCount;
+            var metadata = new
+            {
+                users.TotalCount,
+                users.PageSize,
+                users.CurrentPage,
+                users.TotalPages,
+                users.HasNext,
+                users.HasPrevious
+            };
+
+            Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(metadata));
+
+            _logger.LogInformation($"Returned {users.TotalCount} owners from database.");
+
+            return empObj;
             
-            var users = context.PhoneItems;
-            return users;
         }
 
         [HttpGet("{ID}")]
@@ -37,7 +69,7 @@ namespace PhoneRestApi.Controllers
             return users;
         }
         [HttpPost]
-        public Phone Create(PhoneDTO newPhone)
+        public Phone Create(Phone newPhone)
         {
 
             var phone = context.Add(new Phone

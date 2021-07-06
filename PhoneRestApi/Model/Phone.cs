@@ -1,19 +1,16 @@
+using PhoneRestApi.Helpers;
 using System;
 
 namespace PhoneRestApi
 {
-    public class PhoneDTO
+    public class Phone
     {
+        public int ID { get; set; }
         public string FirstName { get; set; }
 
         public string LastName { get; set; }
 
         public string PhoneNumber { get; set; }
 
-    }
-
-    public class Phone : PhoneDTO
-    {
-        public int ID { get; set; }
     }
 }
