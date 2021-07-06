@@ -1,0 +1,93 @@
+﻿@page "/fetchdata"
+@inject HttpClient Http
+@using System.Net.Http
+@using System.Net.Http.Json
+
+@namespace PhoneRestApi
+
+<h1>Phone Book</h1>
+
+@if (phones == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    
+    <table class="table">
+        <thead>
+            <tr>
+                <th><button @onclick="@(async () => await NameSorting("FirstName"))"> First Name</button></th>
+                <th><button @onclick="@(async () => await NameSorting("FirstName"))">Last Name</button></th>
+                <th>Phone number</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var phone in phones)
+            {
+                <tr>
+                    <td>@phone.FirstName</td>
+                    <td>@phone.LastName</td>
+                    <td>@phone.PhoneNumber</td>
+                    <td><button class="btn btn-primary" @onclick="@(async () => await DeleteItem(phone.ID))">Delete</button></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+}
+
+@code {
+    private Phone[] phones;
+    private int ids = 0;
+
+    protected override async Task OnInitializedAsync() =>
+    phones = await Http.GetFromJsonAsync<Phone[]>("api/Phone");
+}
+
+@code {
+    private async Task DeleteItem(int id)
+    {
+        await Http.DeleteAsync($"api/Phone?delPhone={id}");
+    }
+}
+
+@code {
+    //Sorting
+    protected async Task NameSorting(string SortColumn)
+    {
+        phones = await Http.GetFromJsonAsync<Phone[]>("api/Phone");
+
+
+        if (ids == 0)
+        {
+            ids = 1;
+
+            switch (SortColumn)
+            {
+                case "FirstName":
+                    phones = phones.OrderBy(x => x.FirstName).ToArray();
+                    break;
+                case "LastName":
+                    phones = phones.OrderBy(x => x.LastName).ToArray();
+                    break;
+
+            }
+        }
+        else
+        {
+            ids = 0;
+
+            switch (SortColumn)
+            {
+                case "FirstName":
+                    phones = phones.OrderByDescending(x => x.FirstName).ToArray();
+                    break;
+                case "LastName":
+                    phones = phones.OrderByDescending(x => x.LastName).ToArray();
+                    break;
+
+            }
+        }
+    }
+}
