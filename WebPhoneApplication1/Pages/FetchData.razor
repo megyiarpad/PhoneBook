@@ -14,7 +14,7 @@
 }
 else
 {
-    <button class="btn" @onclick="@(async()=> await SwitchRows())">Switch</button>
+<button class="btn" @onclick="@(async()=> await SwitchRows())">Switch Name Columns</button>
 
                 @if (!isSwitched)
                 {
@@ -23,7 +23,7 @@ else
                 {
                     switched = "Last";
                 }
-<button class="btn" @onclick="@(async()=> await SortRecords(switched))">Order</button>
+<button class="btn" @onclick="@(async()=> await SortRecords(switched))">Change Order</button>
     <table class="table">
         <thead>
             <tr>
@@ -152,7 +152,6 @@ else
 
     public async Task SortRecords(string by)
     {
-
         if (by == "First")
         {
             if (isSortedFirst)
@@ -220,6 +219,7 @@ else
     private async Task DeleteItem(int id)
     {
         await Http.DeleteAsync($"api/Phone?delPhone={id}");
+        phones.RemoveAll(x => x.ID == id);
         this.StateHasChanged();
     }
 }
