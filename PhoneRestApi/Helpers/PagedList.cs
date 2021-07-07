@@ -15,6 +15,7 @@ namespace PhoneRestApi.Helpers
         public bool HasNext => CurrentPage < TotalPages;
         public PagedList(List<T> items, int count, int pageNumber, int pageSize)
         {
+            
             TotalCount = count;
             PageSize = pageSize;
             CurrentPage = pageNumber;
@@ -23,7 +24,7 @@ namespace PhoneRestApi.Helpers
         }
         public static PagedList<T> ToPagedList(IQueryable<T> source, int pageNumber, int pageSize)
         {
-            var count = source.Count();
+            var count = source.Count();        
             var items = source.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList();
             return new PagedList<T>(items, count, pageNumber, pageSize);
         }

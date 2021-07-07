@@ -13,11 +13,6 @@ using System.Threading.Tasks;
 var users = context.PhoneItems.Skip((phoneParameter.PageNumber - 1) * phoneParameter.PageSize)
                 .Take(phoneParameter.PageSize)
                 .ToList();
-
-
-
-
-
  */
 namespace PhoneRestApi.Controllers
 {
@@ -35,12 +30,37 @@ namespace PhoneRestApi.Controllers
         }
 
         [HttpGet]
-        public PhoneDTO GetAll([FromQuery]PhoneParameter phoneParameter)
+        public PhoneDTO GetAll([FromQuery]PhoneParameter phoneParameter, string by, string row)
         {
+            var usersToSort = context.PhoneItems.OrderBy(x => x.FirstName);
+            if(row == "First")
+            {
+                if (by == "asc")
+                {
+                    usersToSort = usersToSort.OrderBy(x => x.FirstName).ThenBy(y => y.LastName);
+                }
+                else if (by == "desc")
+                {
+                    usersToSort = usersToSort.OrderByDescending(x => x.FirstName).ThenBy(y => y.LastName);
+                }
+            } else if (row == "Last")
+            {
+                if (by == "asc")
+                {
+                    usersToSort = usersToSort.OrderBy(x => x.LastName).ThenBy(y => y.FirstName);
+                }
+                else if (by == "desc")
+                {
+                    usersToSort = usersToSort.OrderByDescending(x => x.LastName).ThenBy(y => y.FirstName);
+                }
+            }
+            
+            
             var empObj = new PhoneDTO();
-            var users = Helpers.PagedList<Phone>.ToPagedList(context.PhoneItems,
+            var users = Helpers.PagedList<Phone>.ToPagedList(usersToSort,
                 phoneParameter.PageNumber,
                 phoneParameter.PageSize);
+          
             empObj.Phones = users;
             empObj.TotalCount = users.TotalCount;
             var metadata = new
@@ -60,6 +80,7 @@ namespace PhoneRestApi.Controllers
             return empObj;
             
         }
+
 
         [HttpGet("{ID}")]
         public Phone Get(int ID)
