@@ -14,19 +14,28 @@
 }
 else
 {
-    <button class="btn" @onclick="@(async()=> await SortRecords("switch"))">Switch</button>
+    <button class="btn" @onclick="@(async()=> await SwitchRows())">Switch</button>
+
+                @if (!isSwitched)
+                {
+                    switched = "First";
+                } else if (isSwitched)
+                {
+                    switched = "Last";
+                }
+<button class="btn" @onclick="@(async()=> await SortRecords(switched))">Order</button>
     <table class="table">
         <thead>
             <tr>
                 @if (!isSwitched)
                 {
-                    <th><button class="btn" @onclick="@(async()=> await SortRecords("First"))"> First Name</button></th>
-                    <th><button class="btn" @onclick="@(async()=> await SortRecords("Last"))">Last Name</button></th>
+                    <th> First Name</th>
+                    <th>Last Name</th>
                 }
                 else if (isSwitched)
                 {
-                    <th><button class="btn" @onclick="@(async()=> await SortRecords("Last"))">Last Name</button></th>
-                    <th><button class="btn" @onclick="@(async()=> await SortRecords("First"))"> First Name</button></th>
+                    <th>Last Name</th>
+                    <th>First Name</th>
                 }
 
                 <th>Phone number</th>
@@ -35,27 +44,27 @@ else
         <tbody>
             @foreach (var phone in phones)
             {
-            <tr>
-                @if (!isSwitched)
-                {
-                    <td>@phone.FirstName</td>
-                    <td>@phone.LastName</td>
-                }
-                else if (isSwitched)
-                {
-                    <td>@phone.LastName</td>
-                    <td>@phone.FirstName</td>
-                }
-                <td>@phone.PhoneNumber</td>
-                <td><button class="btn btn-primary" @onclick="@(async () => await DeleteItem(phone.ID))">Delete</button></td>
-            </tr>
+                <tr>
+                    @if (!isSwitched)
+                    {
+                        <td>@phone.FirstName</td>
+                        <td>@phone.LastName</td>
+                    }
+                    else if (isSwitched)
+                    {
+                        <td>@phone.LastName</td>
+                        <td>@phone.FirstName</td>
+                    }
+                    <td>@phone.PhoneNumber</td>
+                    <td><button class="btn btn-primary" @onclick="@(async () => await DeleteItem(phone.ID))">Delete</button></td>
+                </tr>
             }
         </tbody>
     </table>
 
     <div class="pagination">
         <button class="btn" @onclick="@(async()=> await NavigateToPage("prev"))">Prev</button>
-        @for(int i = startPage; i < endPage+1;i++)
+        @for (int i = startPage; i < endPage + 1; i++)
         {
             var currentPage = i;
             <button class="btn pagebutton @(currentPage==curPage?"btn-danger":"")" @onclick="@(async()=> await RefreshRecord(currentPage))">
@@ -68,13 +77,14 @@ else
 }
 
 @code {
-    private int ids = 0;
     public List<Phone> phones { get; set; } = new List<Phone>();
     public PhoneDTO phoneDTO = new PhoneDTO();
 
     bool isSortedFirst = true;
-    bool isSortedLast = true;
+    bool isSortedLast = false;
     bool isSwitched = false;
+    string urlEnd;
+    string switched;
 
     int totalPages;
     int totalRecords;
@@ -84,13 +94,18 @@ else
     int startPage;
     int endPage;
 
-    protected override async Task OnInitializedAsync() {
+    protected override async Task OnInitializedAsync()
+    {
+        isSortedFirst = true;
+        isSortedLast = false;
+        isSwitched = false;
+        switched = "First";
         pageSize = 10;
         pagerSize = 3;
         curPage = 1;
-        phoneDTO = await Http.GetFromJsonAsync<PhoneDTO>("api/Phone?PageNumber="+curPage+"&PageSize="+pageSize);
+        phoneDTO = await Http.GetFromJsonAsync<PhoneDTO>("api/Phone?PageNumber=" + curPage + "&PageSize=" + pageSize);
         phones = phoneDTO.Phones;
-        totalRecords = phoneDTO.TotalCount ;
+        totalRecords = phoneDTO.TotalCount;
 
         totalPages = (int)Math.Ceiling(totalRecords / (decimal)pageSize);
 
@@ -99,11 +114,11 @@ else
 
     public async Task NavigateToPage(string direction)
     {
-        if(direction == "next")
+        if (direction == "next")
         {
-            if(curPage<totalPages)
+            if (curPage < totalPages)
             {
-                if(curPage == endPage)
+                if (curPage == endPage)
                 {
                     SetPagerSize("forward");
 
@@ -127,18 +142,16 @@ else
 
     public async Task RefreshRecord(int currentPage)
     {
+
+
         curPage = currentPage;
-        phoneDTO = await Http.GetFromJsonAsync<PhoneDTO>("api/Phone?PageNumber=" + curPage + "&PageSize=" + pageSize);
+        phoneDTO = await Http.GetFromJsonAsync<PhoneDTO>("api/Phone?PageNumber=" + curPage + "&PageSize=" + pageSize + urlEnd);
         phones = phoneDTO.Phones;
         this.StateHasChanged();
     }
 
     public async Task SortRecords(string by)
     {
-        if (by == "switch")
-        {
-            isSwitched = !isSwitched;
-        }
 
         if (by == "First")
         {
@@ -146,41 +159,45 @@ else
             {
                 phoneDTO = await Http.GetFromJsonAsync<PhoneDTO>("api/Phone?PageNumber=" + curPage + "&PageSize=" + pageSize + "&by=desc&row=First");
                 isSortedFirst = false;
+                urlEnd = "&by=desc&row=First";
             }
             else if (!isSortedFirst)
             {
                 phoneDTO = await Http.GetFromJsonAsync<PhoneDTO>("api/Phone?PageNumber=" + curPage + "&PageSize=" + pageSize + "&by=asc&row=First");
                 isSortedFirst = true;
+                urlEnd = "&by=asc&row=First";
             }
-        } else if (by == "Last")
+        }
+        else if (by == "Last")
         {
             if (isSortedLast)
             {
                 phoneDTO = await Http.GetFromJsonAsync<PhoneDTO>("api/Phone?PageNumber=" + curPage + "&PageSize=" + pageSize + "&by=desc&row=Last");
                 isSortedLast = false;
+                urlEnd = "&by=desc&row=Last";
             }
             else if (!isSortedLast)
             {
                 phoneDTO = await Http.GetFromJsonAsync<PhoneDTO>("api/Phone?PageNumber=" + curPage + "&PageSize=" + pageSize + "&by=asc&row=Last");
                 isSortedLast = true;
+                urlEnd = "&by=asc&row=Last";
             }
 
         }
         phones = phoneDTO.Phones;
         this.StateHasChanged();
     }
-   /* public async Task SwitchRows()
+    public async Task SwitchRows()
     {
         isSwitched = !isSwitched;
-        phones = phoneDTO.Phones;
         this.StateHasChanged();
-    } */
+    }
     public void SetPagerSize(String direction)
     {
         if (direction == "forward" && endPage < totalPages)
         {
             startPage = endPage + 1;
-            if(endPage+pagerSize<totalPages)
+            if (endPage + pagerSize < totalPages)
             {
                 endPage = startPage + pagerSize - 1;
             }
@@ -189,7 +206,8 @@ else
                 endPage = totalPages;
             }
             this.StateHasChanged();
-        } else if(direction == "back" && startPage > 1)
+        }
+        else if (direction == "back" && startPage > 1)
         {
             endPage = startPage - 1;
             startPage = startPage - pagerSize;
