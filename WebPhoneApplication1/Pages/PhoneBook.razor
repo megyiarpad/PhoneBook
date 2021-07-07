@@ -1,4 +1,4 @@
-﻿@page "/fetchdata"
+﻿@page "/phonebook"
 @inject HttpClient Http
 @using System.Net.Http
 @using System.Net.Http.Json
@@ -14,7 +14,7 @@
 }
 else
 {
-<button class="btn" @onclick="@(async()=> await SwitchRows())">Switch Name Columns</button>
+<button class="btn" @onclick="@(()=> SwitchRows())">Switch Name Columns</button>
 
                 @if (!isSwitched)
                 {
@@ -63,7 +63,7 @@ else
     </table>
 
     <div class="pagination">
-        <button class="btn" @onclick="@(async()=> await NavigateToPage("prev"))">Prev</button>
+        <button class="btn" @onclick="@(async()=> await  NavigateToPage("prev"))">Prev</button>
         @for (int i = startPage; i < endPage + 1; i++)
         {
             var currentPage = i;
@@ -71,7 +71,7 @@ else
                 @currentPage
             </button>
         }
-        <button class="btn" @onclick="@(async()=> await NavigateToPage("next"))">Next</button>
+        <button class="btn" @onclick="@(async()=> await  NavigateToPage("next"))">Next</button>
     </div>
 
 }
@@ -124,6 +124,9 @@ else
 
                 }
                 curPage += 1;
+                phoneDTO = await Http.GetFromJsonAsync<PhoneDTO>("api/Phone?PageNumber=" + curPage + "&PageSize=" + pageSize + urlEnd);
+                phones = phoneDTO.Phones;
+                this.StateHasChanged();
             }
         }
         else if (direction == "prev")
@@ -136,6 +139,9 @@ else
 
                 }
                 curPage -= 1;
+                phoneDTO = await Http.GetFromJsonAsync<PhoneDTO>("api/Phone?PageNumber=" + curPage + "&PageSize=" + pageSize + urlEnd);
+                phones = phoneDTO.Phones;
+                this.StateHasChanged();
             }
         }
     }
@@ -186,7 +192,7 @@ else
         phones = phoneDTO.Phones;
         this.StateHasChanged();
     }
-    public async Task SwitchRows()
+    public void SwitchRows()
     {
         isSwitched = !isSwitched;
         this.StateHasChanged();

@@ -1,0 +1,57 @@
+﻿@page "/addcontact"
+@inject HttpClient Http
+@using System.Net.Http
+@using System.Net.Http.Json
+@namespace PhoneRestApi
+
+<h1>Add a contact</h1>
+<div>
+    First Name
+    <input type="text"  @bind="newFirstName" placeholder="Jane" required>
+</div>
+<div>
+    Last Name:
+    <input type="text" @bind="newLastName" placeholder="Alan" required>
+</div>
+<div>
+    Phone Number:
+    <input  @bind="newPhoneNumber" placeholder="+71123456789" required>
+</div>
+<div>
+    <p>
+        @message
+    </p>
+</div>
+<button class="btn btn-primary" @onclick="AddItem">Add</button>
+
+@code {
+    private string newFirstName;
+    private string newLastName;
+    private string newPhoneNumber;
+    private string message;
+
+    private async Task AddItem()
+    {
+
+        var addItem = new Phone { FirstName = newFirstName, LastName = newLastName, PhoneNumber = newPhoneNumber };
+        try
+        {
+            var response = await Http.PostAsJsonAsync("api/Phone", addItem);
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                message = "Contact Added";
+                newFirstName = "";
+                newLastName = "";
+                newPhoneNumber = "";
+                this.StateHasChanged();
+            }
+            else
+            {
+                message = "Error at creating contoct!";
+            }
+        } catch
+        {
+            message = "Error at creating contact!";
+        }
+    }
+}
